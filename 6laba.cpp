@@ -174,6 +174,7 @@ int main() {
 			cout << "______***********************_______" << endl;
 			sis.show();
 			cout << "_______************************______" << endl;
-			com.show();
+			Computer* pt = &com;
+			pt->show();
 
 }
