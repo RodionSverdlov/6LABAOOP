@@ -8,21 +8,24 @@
 using namespace std;
 
 int writeNumbers();
-int chooseMenu();
-int chooseUr(string*, int);
+int chooseMenu(); // выбор пункта меню
+int chooseUr(string*, int); // выбор уравнения
 
 template <typename T>
-class Urav {
+class Uravnenie // класс над объекнтами которого выполняются транзакции
+{
 private:
-	T a, b, c;
-	T disk;
+	T a, b, c; // коэффиценты
+	T disk; // дискриминант
 	T x1;
 	T x2;
 public:
-	Urav() {
-		a = b = c = x1 = x2 = disk = 0;
+	// конструктор
+	Uravnenie() {
+		a = b = c = x1 = x2 = disk = 0; // инициализация полей объекта нулевыми значениями
 	}
-	Urav(T a1, T b1, T c1) {
+	// конструктор с параметрами
+	Uravnenie(T a1, T b1, T c1) {
 		a = a1;
 		b = b1;
 		c = c1;
@@ -40,22 +43,20 @@ public:
 		if (c < 0) cout << c;
 		else cout << "+" << c;
 		cout << endl;
-		cout << "D = b^2-4ac" << endl;
 		T rav = 4 * a * c;
 		if (rav < 0) cout << "D = " << b * b << "+" << -rav;
 		else cout << "D = " << b * b << "-" << rav;
 		cout << " = " << disk << endl;
-		cout << "x1,2 = (-b + sqrt(D))/2a" << endl;
 		cout << "x1 = " << x1 << endl;
 		cout << "x2 = " << x2 << endl;
 	}
-	Urav<T>& operator*=(int abc) {
+	Uravnenie<T>& operator*=(int abc) {
 		a *= abc;
 		b *= abc;
 		c *= abc;
 		return*this;
 	}
-	string getUrav() {
+	string getUravnenie() {
 		string s;
 		s = to_string(a) + "x^2";
 		if (b < 0) s = s + to_string(b) + "x";
@@ -64,12 +65,13 @@ public:
 		else s = s + "+" + to_string(c);
 		return s;
 	}
-	void setKeff() {
-		cout << "Введите коэффицент a: ";
+	void setKeff() // установка коэффицентов
+	{
+		cout << "Введите a: ";
 		a = writeNumbers();
-		cout << "Введите коэффицент b: ";
+		cout << "Введите b: ";
 		b = writeNumbers();
-		cout << "Введите коэффицент c: ";
+		cout << "Введите c: ";
 		c = writeNumbers();
 	}
 	T getA() {
@@ -93,57 +95,62 @@ public:
 };
 
 template <typename T>
-class Tranzktion {
+class Tranzktion // класс поддержки транзакций
+{
 public:
-	Urav<T>* that;
-	Urav<T>* previos;
+	Uravnenie<T>* that; // текущее значение обекта
+	Uravnenie<T>* previos; // предидущее значение объекта
 public:
-	Tranzktion() :previos(NULL), that(new Urav<T>) {};
-	Tranzktion(const Tranzktion<T>& _st) :that(new Urav<T>(*(_st.that))), previos(NULL) {};
-	~Tranzktion() {
+	Tranzktion() :previos(NULL), that(new Uravnenie<T>) {}; // конструктор
+	Tranzktion(const Tranzktion<T>& _st) :that(new Uravnenie<T>(*(_st.that))), previos(NULL) {}; // конструктор копирования
+	~Tranzktion()// деструктор
+	{
 		delete that;
 		delete previos;
 	};
-	Tranzktion<T>& operator=(const Tranzktion<T>& _st) {
-		if (this != &_st)
+	Tranzktion<T>& operator=(const Tranzktion<T>& _st) // перегрузка оператора присваивание
+	{
+		if (this != &_st) // проверка на случай st = st
 		{
-			delete that;
-			that = new Urav<T>(*(_st.that));
+			delete that; // удаление текущего значения объекта
+			that = new Uravnenie<T>(*(_st.that)); // создание и копирование
 		}
-		return *this;
+		return *this; 
 	};
-	void BeginTrans()
+	void BeginTrans() // начало транзакции
 	{
-		delete previos;
-		previos = that;
-		that = new Urav<T>(*previos);
+		delete previos; // удаление предидущего значения
+		previos = that; // текущее становится предидущим
+		that = new Uravnenie<T>(*previos); // новое значение текущего значения
 	};
-	void Commit()
+	void Commit() // закрепление транзакции
 	{
-		delete previos;
-		previos = NULL;
+		delete previos;// удаление предидущего значения
+		previos = NULL; // предидущего состояния нет
 	};
-	void Rollback()
+	void Rollback() // отмена
 	{
 		if (previos != NULL)
 		{
-			delete that;
-			that = previos;
-			previos = NULL;
+			delete that; // удаление текущего значения
+			that = previos; // предидущее становится текущим
+			previos = NULL; // предидущего состояния нет
 		}
 	};
-	Urav<T>* operator->() { return that; };
+	Uravnenie<T>* operator->() // перегрузка операции ->
+	{ return that; };
 };
 
 int main() {
 	setlocale(0, "rus");
 	int nUr = 0;
-	Tranzktion<double>* ur = new Tranzktion<double>[1];
+	Tranzktion<double>* ur = new Tranzktion<double>[1]; // указываем тип данных с которым будем работать переменная УРАВНЕНИЯ
 	while (true) {
-		int choose = chooseMenu();
-		if (choose == 0) {
+		int choose = chooseMenu(); // выбор пункта меню
+		if (choose == 0) // добавляем объект
+		{
 			nUr++;
-			Tranzktion<double>* ptr = new Tranzktion<double>[nUr];
+			Tranzktion<double>* ptr = new Tranzktion<double>[nUr]; // указываем тип даннных для *ПТР*
 			for (int i = 0; i < nUr - 1; i++)
 				ptr[i] = ur[i];
 			ur = ptr;
@@ -152,7 +159,8 @@ int main() {
 			ur[nUr - 1]->setKeff();
 		}
 		else
-			if (choose == 1) {
+			if (choose == 1) // посмотреть и решить уравнение
+			{
 				for (int i = 0; i < nUr; i++) {
 					ur[i]->show();
 					cout << endl;
@@ -161,42 +169,45 @@ int main() {
 				system("cls");
 			}
 			else
-				if (choose == 2) {
+				if (choose == 2) // умножаем коэффицент на число
+				{
 					string* aa = new string[nUr];
 					for (int i = 0; i < nUr; i++)
-						aa[i] = ur[i]->getUrav();
+						aa[i] = ur[i]->getUravnenie();
 					int choose1 = chooseUr(aa, nUr);
 					delete[]aa;
 					if (choose1 == nUr) continue;
 					cout << "Введите число на которое умножить коэффиценты: ";
 					int a = writeNumbers();
-					ur[choose1].BeginTrans();
+					ur[choose1].BeginTrans(); // начало транзакции (изменения объекта)
 					ur[choose1]->operator*=(a);
 				}
 				else
-					if (choose == 3) {
+					if (choose == 3) // откат уравнения на предидущее (отмена транзакции)
+					{
 						string* aa = new string[nUr];
 						for (int i = 0; i < nUr; i++)
-							aa[i] = ur[i]->getUrav();
+							aa[i] = ur[i]->getUravnenie(); // получаем уравнение
 						int choose1 = chooseUr(aa, nUr);
 						delete[]aa;
 						if (choose1 == nUr) continue;
-						cout << "Было: " << ur[choose1]->getUrav() << endl;
-						ur[choose1].Rollback();
-						cout << "Стало: " << ur[choose1]->getUrav() << endl;
+						cout << "До умножения: " << ur[choose1]->getUravnenie() << endl;
+						ur[choose1].Rollback(); // отмена транзакции
+						cout << "После умножения: " << ur[choose1]->getUravnenie() << endl;
 						system("pause");
 						system("cls");
 					}
 					else
-						if (choose == 4) {
+						if (choose == 4) // вычтание одного уравнения от другого
+						{
 							string* aa = new string[nUr];
 							for (int i = 0; i < nUr; i++)
-								aa[i] = ur[i]->getUrav();
+								aa[i] = ur[i]->getUravnenie();
 							int choose1 = chooseUr(aa, nUr);
 							if (choose1 == nUr) continue;
 							int choose2 = chooseUr(aa, nUr);
 							if (choose2 == nUr) continue;
-							ur[choose1].BeginTrans();
+							ur[choose1].BeginTrans(); // начало транзакции
 							ur[choose1]->changeA(ur[choose1]->getA() - ur[choose2]->getA());
 							ur[choose1]->changeB(ur[choose1]->getB() - ur[choose2]->getB());
 							ur[choose1]->changeC(ur[choose1]->getC() - ur[choose2]->getC());
@@ -217,23 +228,23 @@ int chooseMenu() {
 	while (true) {
 		choose_menu = (choose_menu + 6) % 6;
 
-		if (choose_menu == 0) cout << "-> Добавить уравнение" << endl;
-		else cout << " Добавить уравнение" << endl;
+		if (choose_menu == 0) cout << "**СОЗДАТЬ/ДОБАВИТЬ УРАВНЕНИЕ**" << endl;
+		else cout << " создать/добавить уравнение" << endl;
 
-		if (choose_menu == 1) cout << "-> Посмотреть уравнения и решить" << endl;
-		else cout << " Посмотреть уравнения и решить" << endl;
+		if (choose_menu == 1) cout << "**ПОСМОТРЕТЬ УРАВНЕНИЕ И РЕШИТЬ ЕГО**" << endl;
+		else cout << " посмотреть уравнения и решить его" << endl;
 
-		if (choose_menu == 2) cout << " -> Умножить коэфиценты на число" << endl;
-		else cout << " Умножить коэфиценты на число" << endl;
+		if (choose_menu == 2) cout << "**УМОЖИТЬ КОЭФИЦЕНТЫ НА ЧИСЛО**" << endl;
+		else cout << " умножить коэфиценты на число" << endl;
 
-		if (choose_menu == 3) cout << " -> Откатить уравнение на предыдущее" << endl;
-		else cout << " Откатить уравнение на предыдущее" << endl;
+		if (choose_menu == 3) cout << "**ОТКАТ УРАВНЕНИЯ НА ПРЕИДУЩЕЕ**" << endl;
+		else cout << " откат уравнения на предыдущее" << endl;
 
-		if (choose_menu == 4) cout << " -> Отнять одно уравнения от другого" << endl;
-		else cout << " Отнять одно уравнения от другого" << endl;
+		if (choose_menu == 4) cout << "**ОТНЯТЬ ОДНО УРАВНЕНИЕ ОТ ДРУГОГО**" << endl;
+		else cout << " отнять одно уравнения от другого" << endl;
 
-		if (choose_menu == 5) cout << " -> Выход" << endl;
-		else cout << " Выход" << endl;
+		if (choose_menu == 5) cout << "**ВЫХОД**" << endl;
+		else cout << " выход" << endl;
 
 		key = _getch();
 		if (key == 224) {
@@ -254,9 +265,9 @@ int writeNumbers() {
 	int d = 0;
 	while (true) {
 		int key;
-		key = _getch();
+		key = _getch(); // получение номера кнопки
 		if (key == 224) {
-			key = _getch();
+			key = _getch(); // повторное получения номера кнопки
 		}
 		else
 			if (key == 8) {
@@ -286,20 +297,21 @@ int writeNumbers() {
 	return stoi(numbers);
 }
 
-int chooseUr(string* a, int nUr) {
-	int choose_menu = 0, keyboard_button = 0;
+int chooseUr(string* a, int nUr) // функция выбора уравнения
+{
+	int choose_menu = 0, keyboard_button = 0; // номер кнопки
 	while (true) {
-		cout << "Стрелочками ВВЕРХ и ВНИЗ выберите уравнение" << endl;
+		cout << "выберите уравнение" << endl;
 		choose_menu = (choose_menu + (nUr + 1)) % (nUr + 1);
 
 		for (int i = 0; i < nUr; i++)
 			if (i == choose_menu) { cout << " -> " << i + 1 << " - " << a[i] << endl; }
 			else { cout << " " << i + 1 << " - " << a[i] << endl; }
 
-		if (choose_menu == nUr) { cout << " -> Выйти с выбора" << endl; }
-		else cout << " Выйти с выбора" << endl;
+		if (choose_menu == nUr) { cout << "**НАЗАД**" << endl; }
+		else cout << " назад" << endl;
 
-		keyboard_button = _getch();
+		keyboard_button = _getch(); // получаем номер кнопки
 		if (keyboard_button == 224) {
 			keyboard_button = _getch();
 			if (keyboard_button == 72) choose_menu--;
